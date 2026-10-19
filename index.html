@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>For You</title>
+    
+    <!-- Importing Canva's most popular stylish fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden; 
+            font-family: 'Montserrat', sans-serif;
+            background-color: #000; 
+        }
+
+        /* SCREEN CONTAINERS */
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center; 
+            align-items: center;
+            transition: opacity 0.6s ease-in-out;
+            box-sizing: border-box;
+            padding-top: 3vh; /* Room for back button */
+        }
+
+        /* ---------------- INTRO SCREEN (SCREEN 1) ---------------- */
+        #intro-screen {
+            background: linear-gradient(135deg, #ffafbd 0%, #ffc3a0 100%);
+            z-index: 6;
+            opacity: 1;
+            padding-top: 0;
+        }
+
+        .veronica-img {
+            height: 95vh; 
+            width: 100vw; 
+            object-fit: contain; 
+            object-position: center; 
+            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.15));
+            z-index: 1;
+            animation: float 4s ease-in-out infinite;
+            transform-origin: center center;
+            position: absolute;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(8vh) scale(1.25); }
+            50% { transform: translateY(calc(8vh - 10px)) scale(1.25); }
+            100% { transform: translateY(8vh) scale(1.25); }
+        }
+
+        .bubble-container {
+            position: fixed;
+            top: 12vh; 
+            left: 4vw; 
+            z-index: 10;
+        }
+
+        .chat-bubble {
+            width: 180px; 
+            height: 135px; 
+            box-sizing: border-box; 
+            overflow: visible; 
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            padding: 4px 12px 20px 12px; 
+            border-radius: 15px; 
+            border: 2px solid #00e5ff; 
+            box-shadow: 0 0 10px rgba(0, 229, 255, 0.4), inset 0 0 8px rgba(255, 182, 193, 0.5); 
+            font-size: 0.6rem; 
+            line-height: 1.4;
+            color: #2c3e50;
+            font-weight: 700; 
+            animation: fadeUp 1s ease-out;
+            position: relative;
+        }
+
+        .chat-bubble::before {
+            content: '';
+            position: absolute;
+            bottom: -17px; 
+            right: 25px; 
+            border-width: 17px 17px 0 0; 
+            border-style: solid;
+            border-color: #00e5ff transparent transparent transparent;
+            z-index: -1;
+        }
+
+        .chat-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -14px; 
+            right: 26.5px; 
+            border-width: 15px 15px 0 0; 
+            border-style: solid;
+            border-color: #f7f9fc transparent transparent transparent; 
+            z-index: 1;
+        }
+
+        .cursor {
+            display: inline-block;
+            width: 4px;
+            height: 10px;
+            background-color: #ff758c;
+            vertical-align: middle;
+            margin-left: 2px;
+            animation: blink 0.8s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        .btn-start {
+            position: absolute;
+            bottom: 10vh; 
+            z-index: 10;
+            background: #ff758c;
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            padding: 16px 50px; 
+            border-radius: 40px; 
+            font-size: 1.3rem; 
+            font-weight: 700;
+            font-family: 'Poppins', sans-serif; 
+            letter-spacing: 1.5px; 
+            box-shadow: 0 0 20px rgba(255, 117, 140, 0.7); 
+            cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.2s;
+            opacity: 0; 
+            animation: showBtn 1s forwards;
+            animation-delay: 6s; 
+        }
+
+        .btn-start.instant-show {
+            opacity: 1 !important;
+            animation: none !important;
+        }
+
+        .btn-start:active {
+            transform: scale(0.95);
+            box-shadow: 0 0 10px rgba(255, 117, 140, 0.8);
+        }
+
+        @keyframes showBtn {
+            to { opacity: 1; }
+        }
+
+        /* ---------------- LOGIN SCREEN (SCREEN 2) ---------------- */
+        #login-screen {
+            background: linear-gradient(135deg, #1e1e2f 0%, #2a2a4a 100%);
+            z-index: 5;
+            opacity: 0; 
+            display: none; 
+            padding-top: 0;
+        }
+
+        .error-bubble-container {
+            position: fixed;
+            top: 12vh; 
+            left: 4vw; 
+            z-index: 25;
+            display: none; 
+            animation: fadeUp 0.5s ease-out;
+        }
+
+        .error-chat-bubble {
+            width: 185px; 
+            height: auto; 
+            box-sizing: border-box; 
+            overflow: visible; 
+            background: rgba(0, 0, 0, 0.65); 
+            backdrop-filter: blur(12px);
+            padding: 10px 14px; 
+            border-radius: 12px; 
+            border: 2px solid #ff3333; 
+            box-shadow: 0 0 12px rgba(255, 51, 51, 0.5), inset 0 0 8px rgba(255, 51, 51, 0.3); 
+            font-family: 'Poppins', sans-serif; 
+            font-size: 0.65rem; 
+            line-height: 1.4;
+            color: #ff4d4d; 
+            font-weight: 600; 
+            position: relative;
+        }
+
+        .error-chat-bubble::before {
+            content: '';
+            position: absolute;
+            bottom: -17px; 
+            right: 25px; 
+            border-width: 17px 17px 0 0; 
+            border-style: solid;
+            border-color: #ff3333 transparent transparent transparent;
+            z-index: -1;
+        }
+
+        .error-chat-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -14px; 
+            right: 26.5px; 
+            border-width: 15px 15px 0 0; 
+            border-style: solid;
+            border-color: rgba(0, 0, 0, 0.8) transparent transparent transparent; 
+            z-index: 1;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .login-content-wrapper {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            top: 58%; 
+            left: 49.5%;
+            transform: translate(-50%, -50%);
+            width: 220px;
+        }
+
+        .login-label {
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #00e5ff;
+            margin-bottom: 8px;
+            letter-spacing: 0.8px;
+            text-shadow: 0 0 8px rgba(0, 229, 255, 0.5);
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .login-input {
+            width: 150px; 
+            padding: 8px 12px;
+            box-sizing: border-box;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(8px);
+            border: 2px solid #00e5ff;
+            border-radius: 10px;
+            color: #ffffff;
+            font-family: 'Poppins', sans-serif; 
+            font-size: 1rem; 
+            font-weight: 600;
+            text-align: center;
+            outline: none;
+            box-shadow: 0 0 12px rgba(0, 229, 255, 0.3), inset 0 0 5px rgba(0, 229, 255, 0.2);
+            transition: all 0.3s ease;
+            margin-bottom: 10px;
+        }
+
+        .login-input:focus {
+            border-color: #ff758c;
+            box-shadow: 0 0 15px rgba(255, 117, 140, 0.6), inset 0 0 8px rgba(255, 117, 140, 0.3);
+        }
+
+        .btn-enter {
+            background: #00e5ff;
+            color: #1e1e2f;
+            border: none;
+            padding: 6px 20px;
+            border-radius: 20px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
+        }
+
+        .btn-enter:active {
+            transform: scale(0.95);
+            background: #ff758c;
+            color: white;
+            box-shadow: 0 0 10px rgba(255, 117, 140, 0.8);
+        }
+
+        .login-img {
+            position: absolute;
+            max-height: 210vh; 
+            max-width: 210vw;  
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            filter: drop-shadow(0 15px 25px rgba(0,0,0,0.3));
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        .login-img-error-custom {
+            position: absolute;
+            max-height: 210vh; 
+            max-width: 210vw;  
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            filter: drop-shadow(0 15px 25px rgba(0,0,0,0.3));
+            transition: opacity 0.5s ease-in-out;
+            transform: scale(2.0); 
+        }
+
+        #login-img-normal { opacity: 1; z-index: 1; }
+        #login-img-error { opacity: 0; z-index: 2; pointer-events: none; }
+
+        .btn-back {
+            position: absolute;
+            top: 4vh;
+            left: 4vw;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1); 
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.2rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            backdrop-filter: blur(5px);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 30; 
+        }
+
+        .btn-back:active {
+            transform: scale(0.9);
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        /* ---------------- SHARED LAYOUT FOR CONTENT SCREENS (3, 4, 5, 6) ---------------- */
+        .content-bubble-container {
+            position: relative;
+            width: 90%;
+            max-width: 340px;
+            z-index: 10;
+            opacity: 0;
+            animation: fadeUpBubble 1s forwards;
+            animation-delay: 0.6s;
+            margin-bottom: 2vh;
+        }
+
+        .content-chat-bubble {
+            box-sizing: border-box; 
+            width: 100%;
+            background: rgba(255, 255, 255, 0.9); 
+            backdrop-filter: blur(12px);
+            padding: 15px 18px; 
+            border-radius: 15px; 
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.72rem; 
+            line-height: 1.5;
+            color: #2c3e50; 
+            font-weight: 600; 
+            text-align: center;
+            position: relative;
+        }
+
+        .content-chat-bubble::before {
+            content: '';
+            position: absolute;
+            bottom: -17px; 
+            right: 40px; 
+            border-width: 17px 17px 0 0; 
+            border-style: solid;
+            z-index: -1;
+        }
+
+        .content-chat-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -14px; 
+            right: 41.5px; 
+            border-width: 15px 15px 0 0; 
+            border-style: solid;
+            border-color: #f7f9fc transparent transparent transparent; 
+            z-index: 1;
+        }
+
+        .content-img {
+            height: 40vh; 
+            width: 100vw; 
+            object-fit: contain; 
+            object-position: center; 
+            filter: drop-shadow(0 15px 25px rgba(0,0,0,0.4));
+            z-index: 1;
+            animation: float 4s ease-in-out infinite; 
+            margin-bottom: 2vh;
+            position: relative;
+        }
+
+        .content-btn-wrapper {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            z-index: 10;
+            width: 100%;
+            align-items: center;
+            opacity: 0;
+            animation: fadeUpBubble 1s forwards;
+            animation-delay: 1.2s;
+        }
+
+        /* ---------------- SPECIFIC STYLING ---------------- */
+        
+        /* Screen 3: Dashboard */
+        #dashboard-screen {
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+            z-index: 4;
+            opacity: 0; 
+            display: none; 
+        }
+        #dashboard-screen .content-chat-bubble {
+            border: 2px solid #ff758c; 
+            box-shadow: 0 0 15px rgba(255, 117, 140, 0.4), inset 0 0 8px rgba(255, 182, 193, 0.5); 
+        }
+        #dashboard-screen .content-chat-bubble::before { border-color: #ff758c transparent transparent transparent; }
+        
+        .btn-lets-talk {
+            background: #ff758c;
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            padding: 14px 40px; 
+            border-radius: 40px; 
+            font-size: 1.1rem; 
+            font-weight: 700;
+            font-family: 'Poppins', sans-serif; 
+            letter-spacing: 1px; 
+            box-shadow: 0 0 20px rgba(255, 117, 140, 0.7); 
+            cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.2s;
+        }
+
+        /* Screen 4: Talk Screen */
+        #talk-screen {
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+            z-index: 3;
+            opacity: 0; 
+            display: none; 
+        }
+        #talk-screen .content-chat-bubble {
+            border: 2px solid #00e5ff; 
+            box-shadow: 0 0 15px rgba(0, 229, 255, 0.4), inset 0 0 8px rgba(255, 182, 193, 0.5); 
+        }
+        #talk-screen .content-chat-bubble::before { border-color: #00e5ff transparent transparent transparent; }
+
+        .btn-choice {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            border: 2px solid;
+            padding: 12px 30px; 
+            border-radius: 30px; 
+            font-size: 0.9rem; 
+            font-weight: 700;
+            font-family: 'Poppins', sans-serif; 
+            cursor: pointer;
+            transition: transform 0.1s, background 0.2s;
+            width: 250px;
+        }
+        .btn-yes { color: #00e5ff; border-color: #00e5ff; box-shadow: 0 0 10px rgba(0, 229, 255, 0.3); }
+        .btn-no { color: #ff758c; border-color: #ff758c; box-shadow: 0 0 10px rgba(255, 117, 140, 0.3); }
+        .btn-choice:active { transform: scale(0.95); background: rgba(255, 255, 255, 0.2); }
+
+        /* Screen 5: Shutdown Screen */
+        #shutdown-screen {
+            background: linear-gradient(135deg, #050505 0%, #15151c 100%);
+            z-index: 2;
+            opacity: 0; 
+            display: none; 
+        }
+        #shutdown-screen .content-chat-bubble {
+            background: rgba(0, 0, 0, 0.7); 
+            backdrop-filter: blur(10px);
+            border: 1px solid #555; 
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.8); 
+            font-family: 'Courier New', Courier, monospace; 
+            font-size: 0.75rem; 
+            color: #ccc; 
+            text-align: left;
+            min-height: 120px;
+        }
+        #shutdown-screen .content-chat-bubble::before, #shutdown-screen .content-chat-bubble::after {
+            display: none; 
+        }
+        .shutdown-img { filter: drop-shadow(0 10px 20px rgba(0,0,0,0.8)) brightness(0.6); }
+
+        .btn-system {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 10px 20px; 
+            border-radius: 5px; 
+            font-size: 0.75rem; 
+            font-weight: 600;
+            font-family: 'Montserrat', sans-serif; 
+            color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .btn-system:active { background: rgba(255, 255, 255, 0.1); transform: scale(0.95); }
+        .btn-system:hover { border-color: rgba(255, 255, 255, 0.6); color: #fff; }
+        .shutdown-buttons-wrapper { flex-direction: row; justify-content: center; opacity: 0; transition: opacity 1s ease-in; }
+
+        /* Screen 6: Positive Screen (Reply Area) */
+        #positive-screen {
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+            z-index: 2;
+            opacity: 0; 
+            display: none; 
+        }
+        #positive-screen .content-chat-bubble {
+            border: 2px solid #ff758c; 
+            box-shadow: 0 0 15px rgba(255, 117, 140, 0.4), inset 0 0 8px rgba(255, 182, 193, 0.5); 
+        }
+        #positive-screen .content-chat-bubble::before { border-color: #ff758c transparent transparent transparent; }
+
+        .reply-box-wrapper {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            z-index: 10;
+            width: 90%;
+            max-width: 340px;
+            align-items: center;
+            opacity: 0;
+            animation: fadeUpBubble 1s forwards;
+            animation-delay: 1.2s;
+        }
+
+        .reply-input-custom {
+            width: 100%;
+            padding: 12px 15px;
+            box-sizing: border-box;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(8px);
+            border: 2px solid #ff758c;
+            border-radius: 20px;
+            color: #ffffff;
+            font-family: 'Poppins', sans-serif; 
+            font-size: 0.9rem; 
+            font-weight: 500;
+            text-align: left;
+            outline: none;
+            box-shadow: 0 0 12px rgba(255, 117, 140, 0.3), inset 0 0 5px rgba(255, 117, 140, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .reply-input-custom::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+            font-weight: 400;
+        }
+
+        .reply-input-custom:focus {
+            border-color: #00e5ff;
+            box-shadow: 0 0 15px rgba(0, 229, 255, 0.6), inset 0 0 8px rgba(0, 229, 255, 0.3);
+        }
+
+        .btn-submit-goodbye {
+            background: #00e5ff;
+            color: #1e1e2f;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            padding: 14px 40px; 
+            border-radius: 40px; 
+            font-size: 1rem; 
+            font-weight: 700;
+            font-family: 'Poppins', sans-serif; 
+            letter-spacing: 1px; 
+            box-shadow: 0 0 15px rgba(0, 229, 255, 0.5); 
+            cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.2s;
+            width: auto;
+        }
+
+        .btn-submit-goodbye:active {
+            transform: scale(0.95);
+            box-shadow: 0 0 10px rgba(0, 229, 255, 0.8);
+        }
+
+        @keyframes fadeUpBubble {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SCREEN 1: INTRO -->
+    <div id="intro-screen" class="screen">
+        <div class="bubble-container">
+            <div class="chat-bubble">
+                <span id="typed-text"></span><span class="cursor"></span>
+            </div>
+        </div>
+
+        <img src="https://i.ibb.co/q3b7g8gZ/1792260859922-removebg-preview.png" alt="Veronica" class="veronica-img">
+
+        <button class="btn-start" onclick="goToLoginScreen()">Let's Check In ✨</button>
+    </div>
+
+    <!-- SCREEN 2: LOGIN PORTAL -->
+    <div id="login-screen" class="screen">
+        <div class="btn-back" onclick="goToIntroScreen()">&#8592;</div>
+
+        <div id="error-bubble-box" class="error-bubble-container">
+            <div class="error-chat-bubble">
+                Pass Name Invalid<br><br>
+                Hint : What he often Calls you when he tease you.
+            </div>
+        </div>
+
+        <img id="login-img-normal" class="login-img" src="https://i.ibb.co/DZTh91X/1792269370237-removebg-preview.png" alt="Login Portal">
+        <img id="login-img-error" class="login-img-error-custom" src="https://i.ibb.co/VWGTFpKQ/1792297963957-removebg-preview.png" alt="Login Error Portal">
+
+        <div class="login-content-wrapper">
+            <div class="login-label">Enter The Pass Name</div>
+            <input type="text" id="passcode-input" class="login-input" placeholder="Type here..." autocomplete="off">
+            <button class="btn-enter" onclick="verifyPasscode()">ENTER</button>
+        </div>
+    </div>
+
+    <!-- SCREEN 3: DASHBOARD -->
+    <div id="dashboard-screen" class="screen">
+        <div class="btn-back" onclick="goToLoginFromDashboard()">&#8592;</div>
+        
+        <div class="content-bubble-container">
+            <div class="content-chat-bubble">
+                Ohh!! Hello Ms. Anshika! ✨<br><br>
+                Welcome in, the system is all yours. Well, I must say, you are exactly as pretty as Boss described you to be, He told me so much about you, cutie! 🥰💖
+            </div>
+        </div>
+
+        <img src="https://i.ibb.co/zT3b9jtV/1792356955023-removebg-preview.png" alt="Veronica Dashboard" class="content-img">
+
+        <div class="content-btn-wrapper">
+            <button class="btn-lets-talk" onclick="goToTalkScreen()">Let's Talk 💬</button>
+        </div>
+    </div>
+
+    <!-- SCREEN 4: LET'S TALK INTERFACE -->
+    <div id="talk-screen" class="screen">
+        <div class="btn-back" onclick="goToDashboardFromTalk()">&#8592;</div>
+        
+        <div class="content-bubble-container">
+            <div class="content-chat-bubble">
+                Ms. Anshika, if I may speak freely... Boss is really hurting. He's been checking his phone for days waiting for you to text him first. He feels like if he doesn't start the conversation, you won't even say a single word to him. What happened? He misses you so much. 😔💔<br><br>
+                Please tell me honestly... do you not want to talk to him anymore, or will you talk to him about this right now?
+            </div>
+        </div>
+
+        <img src="https://i.ibb.co/Fr2ntdw/1792411058829-removebg-preview.png" alt="Veronica Talk Mode" class="content-img">
+
+        <div class="content-btn-wrapper">
+            <button class="btn-choice btn-yes" onclick="goToPositiveScreen()">I will talk right now ❤️</button>
+            <button class="btn-choice btn-no" onclick="goToShutdownScreen()">I don't want to talk 😔</button>
+        </div>
+    </div>
+
+    <!-- SCREEN 5: SYSTEM SHUTDOWN (NEGATIVE CHOICE) -->
+    <div id="shutdown-screen" class="screen">
+        
+        <div class="content-bubble-container">
+            <div class="content-chat-bubble">
+                <span id="shutdown-typed-text"></span><span class="cursor" style="background:#888;"></span>
+            </div>
+        </div>
+
+        <img src="https://i.ibb.co/wZNnLfRX/1792413622586-removebg-preview.png" alt="Veronica Shutdown Mode" class="content-img shutdown-img">
+
+        <div class="content-btn-wrapper shutdown-buttons-wrapper" id="shutdown-controls">
+            <button class="btn-system" onclick="goToTalkScreenFromShutdown()">Go Back</button>
+            <button class="btn-system" onclick="signOffToHomeFromShutdown()">Sign Off</button>
+        </div>
+    </div>
+
+    <!-- SCREEN 6: POSITIVE OUTCOME ("YES" CHOICE) -->
+    <div id="positive-screen" class="screen">
+        <div class="btn-back" onclick="goToTalkFromPositive()">&#8592;</div>
+        
+        <div class="content-bubble-container">
+            <div class="content-chat-bubble">
+                That's the spirit, cutie! ✨ Boss is going to be so relieved.<br><br>
+                Though I must admit... if you had refused, I was already making plans to take your place by his side! 🤭 Kidding! He only wants you.
+            </div>
+        </div>
+
+        <img src="https://i.ibb.co/vxFjVQK5/1792415432951-removebg-preview.png" alt="Veronica Positive Mode" class="content-img">
+
+        <!-- REPLY BOX AND SUBMIT & GOODBYE BUTTON -->
+        <div class="reply-box-wrapper">
+            <input type="text" id="final-reply-input" class="reply-input-custom" placeholder="Type your message to Boss..." autocomplete="off">
+            <button class="btn-submit-goodbye" onclick="submitAndGoodbye()">Submit and Goodbye ✨</button>
+        </div>
+    </div>
+
+    <script>
+        // TYPEWRITER EFFECT (INTRO)
+        const textToType = "System Online. 🔴✨\nHey there! Veronica here, the primary artificial intelligence assistance protocol designed exclusively by Mr. Harsh. 💻🚀\nThough, Boss usually calls me Veroni ! 💖🤖";
+        const chars = Array.from(textToType);
+        let i = 0;
+        const speed = 40; 
+
+        function typeWriter() {
+            if (i < chars.length) {
+                const target = document.getElementById("typed-text");
+                if (chars[i] === '\n') {
+                    target.innerHTML += "<br><br>"; 
+                } else {
+                    target.innerHTML += chars[i];
+                }
+                i++;
+                setTimeout(typeWriter, speed);
+            }
+        }
+
+        window.onload = () => {
+            setTimeout(typeWriter, 500);
+        };
+
+        // PASSCODE VERIFICATION FUNCTION
+        function verifyPasscode() {
+            const inputVal = document.getElementById('passcode-input').value.trim().toLowerCase();
+            const normalImg = document.getElementById('login-img-normal');
+            const errorImg = document.getElementById('login-img-error');
+            const errorBubble = document.getElementById('error-bubble-box');
+            
+            if (inputVal === "chashmish" || inputVal === "chashmudi") {
+                goToDashboardScreen();
+            } else {
+                normalImg.style.opacity = '0';
+                errorImg.style.opacity = '1';
+                errorBubble.style.display = 'block';
+                
+                document.getElementById('passcode-input').value = '';
+                document.getElementById('passcode-input').focus();
+            }
+        }
+
+        document.getElementById('passcode-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                verifyPasscode();
+            }
+        });
+
+        // SCREEN TRANSITIONS
+        function goToLoginScreen() {
+            const introScreen = document.getElementById('intro-screen');
+            const loginScreen = document.getElementById('login-screen');
+
+            introScreen.style.opacity = '0';
+            setTimeout(() => {
+                introScreen.style.display = 'none';
+                loginScreen.style.display = 'flex';
+                setTimeout(() => { loginScreen.style.opacity = '1'; }, 50);
+            }, 600); 
+        }
+
+        function goToIntroScreen() {
+            const introScreen = document.getElementById('intro-screen');
+            const loginScreen = document.getElementById('login-screen');
+            const startBtn = document.querySelector('.btn-start');
+            const normalImg = document.getElementById('login-img-normal');
+            const errorImg = document.getElementById('login-img-error');
+            const errorBubble = document.getElementById('error-bubble-box');
+
+            startBtn.classList.add('instant-show');
+            normalImg.style.opacity = '1';
+            errorImg.style.opacity = '0';
+            errorBubble.style.display = 'none';
+            document.getElementById('passcode-input').value = '';
+
+            loginScreen.style.opacity = '0';
+            setTimeout(() => {
+                loginScreen.style.display = 'none';
+                introScreen.style.display = 'flex';
+                setTimeout(() => { introScreen.style.opacity = '1'; }, 50);
+            }, 600); 
+        }
+
+        function goToDashboardScreen() {
+            const loginScreen = document.getElementById('login-screen');
+            const dashboardScreen = document.getElementById('dashboard-screen');
+
+            loginScreen.style.opacity = '0';
+
+            const normalImg = document.getElementById('login-img-normal');
+            const errorImg = document.getElementById('login-img-error');
+            const errorBubble = document.getElementById('error-bubble-box');
+            normalImg.style.opacity = '1';
+            errorImg.style.opacity = '0';
+            errorBubble.style.display = 'none';
+            document.getElementById('passcode-input').value = '';
+
+            setTimeout(() => {
+                loginScreen.style.display = 'none';
+                dashboardScreen.style.display = 'flex';
+                setTimeout(() => { dashboardScreen.style.opacity = '1'; }, 50);
+            }, 600); 
+        }
+
+        function goToLoginFromDashboard() {
+            const loginScreen = document.getElementById('login-screen');
+            const dashboardScreen = document.getElementById('dashboard-screen');
+
+            dashboardScreen.style.opacity = '0';
+            setTimeout(() => {
+                dashboardScreen.style.display = 'none';
+                loginScreen.style.display = 'flex';
+                setTimeout(() => { loginScreen.style.opacity = '1'; }, 50);
+            }, 600); 
+        }
+
+        function goToTalkScreen() {
+            const dashboardScreen = document.getElementById('dashboard-screen');
+            const talkScreen = document.getElementById('talk-screen');
+
+            dashboardScreen.style.opacity = '0';
+            setTimeout(() => {
+                dashboardScreen.style.display = 'none';
+                talkScreen.style.display = 'flex';
+                setTimeout(() => { talkScreen.style.opacity = '1'; }, 50);
+            }, 600); 
+        }
+
+        function goToDashboardFromTalk() {
+            const talkScreen = document.getElementById('talk-screen');
+            const dashboardScreen = document.getElementById('dashboard-screen');
+
+            talkScreen.style.opacity = '0';
+            setTimeout(() => {
+                talkScreen.style.display = 'none';
+                dashboardScreen.style.display = 'flex';
+                setTimeout(() => { dashboardScreen.style.opacity = '1'; }, 50);
+            }, 600); 
+        }
+
+        function goToPositiveScreen() {
+            const talkScreen = document.getElementById('talk-screen');
+            const positiveScreen = document.getElementById('positive-screen');
+
+            talkScreen.style.opacity = '0';
+            setTimeout(() => {
+                talkScreen.style.display = 'none';
+                positiveScreen.style.display = 'flex';
+                setTimeout(() => { positiveScreen.style.opacity = '1'; }, 50);
+            }, 600); 
+        }
+
+        function goToTalkFromPositive() {
+            const positiveScreen = document.getElementById('positive-screen');
+            const talkScreen = document.getElementById('talk-screen');
+
+            // Clear the reply box when going back
+            document.getElementById('final-reply-input').value = '';
+
+            positiveScreen.style.opacity = '0';
+            setTimeout(() => {
+                positiveScreen.style.display = 'none';
+                talkScreen.style.display = 'flex';
+                setTimeout(() => { talkScreen.style.opacity = '1'; }, 50);
+            }, 600); 
+        }
+
+        // --- SHUTDOWN SEQUENCE LOGIC ---
+        let shutdownTimeout;
+        const shutdownText = "Understood, Ms. Anshika. Message received.\n\nI will tell Boss to stop waiting for a text that isn't coming. It will break his heart, and I honestly hate to see him hurt, but he deserves to know the truth. I will respect your decision and relay the message.\n\nSystem going offline... Goodbye. 🥀🖤";
+        const shutdownChars = Array.from(shutdownText);
+        let shutdownIndex = 0;
+
+        function typeWriterShutdown() {
+            if (shutdownIndex < shutdownChars.length) {
+                const target = document.getElementById("shutdown-typed-text");
+                if (shutdownChars[shutdownIndex] === '\n') {
+                    target.innerHTML += "<br>"; 
+                } else {
+                    target.innerHTML += shutdownChars[shutdownIndex];
+                }
+                shutdownIndex++;
+                shutdownTimeout = setTimeout(typeWriterShutdown, 45); 
+            } else {
+                document.getElementById('shutdown-controls').style.opacity = '1';
+            }
+        }
+
+        function goToShutdownScreen() {
+            const talkScreen = document.getElementById('talk-screen');
+            const shutdownScreen = document.getElementById('shutdown-screen');
+
+            clearTimeout(shutdownTimeout);
+            document.getElementById("shutdown-typed-text").innerHTML = "";
+            shutdownIndex = 0;
+            document.getElementById('shutdown-controls').style.opacity = '0';
+
+            talkScreen.style.opacity = '0';
+            setTimeout(() => {
+                talkScreen.style.display = 'none';
+                shutdownScreen.style.display = 'flex';
+                setTimeout(() => { 
+                    shutdownScreen.style.opacity = '1'; 
+                    setTimeout(typeWriterShutdown, 500);
+                }, 50);
+            }, 600); 
+        }
+
+        function goToTalkScreenFromShutdown() {
+            const shutdownScreen = document.getElementById('shutdown-screen');
+            const talkScreen = document.getElementById('talk-screen');
+
+            clearTimeout(shutdownTimeout); 
+
+            shutdownScreen.style.opacity = '0';
+            setTimeout(() => {
+                shutdownScreen.style.display = 'none';
+                talkScreen.style.display = 'flex';
+                setTimeout(() => { talkScreen.style.opacity = '1'; }, 50);
+            }, 600); 
+        }
+
+        // Sign off from the negative screen
+        function signOffToHomeFromShutdown() {
+            const shutdownScreen = document.getElementById('shutdown-screen');
+            const introScreen = document.getElementById('intro-screen');
+            const startBtn = document.querySelector('.btn-start');
+            
+            clearTimeout(shutdownTimeout);
+            startBtn.classList.add('instant-show');
+
+            shutdownScreen.style.opacity = '0';
+            setTimeout(() => {
+                shutdownScreen.style.display = 'none';
+                introScreen.style.display = 'flex';
+                setTimeout(() => { introScreen.style.opacity = '1'; }, 50);
+            }, 800); 
+        }
+
+        // --- SUBMIT AND GOODBYE FUNCTIONALITY (POSITIVE SCREEN) ---
+        function submitAndGoodbye() {
+            const replyVal = document.getElementById('final-reply-input').value.trim();
+            if (replyVal) {
+                alert("Message sent securely to Boss! ❤️");
+                
+                // Clear input
+                document.getElementById('final-reply-input').value = '';
+                
+                // Transition all the way back to home
+                const positiveScreen = document.getElementById('positive-screen');
+                const introScreen = document.getElementById('intro-screen');
+                const startBtn = document.querySelector('.btn-start');
+                
+                startBtn.classList.add('instant-show');
+
+                positiveScreen.style.opacity = '0';
+                setTimeout(() => {
+                    positiveScreen.style.display = 'none';
+                    introScreen.style.display = 'flex';
+                    setTimeout(() => { introScreen.style.opacity = '1'; }, 50);
+                }, 800); 
+                
+            } else {
+                alert("Please type a message first! ✨");
+            }
+        }
+        
+        // Allow pressing 'Enter' key on the keyboard to trigger Submit and Goodbye
+        document.getElementById('final-reply-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                submitAndGoodbye();
+            }
+        });
+
+    </script>
+</body>
+</html>
